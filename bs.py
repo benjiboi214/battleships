@@ -104,7 +104,8 @@ def check_ship_loc(board, ship):
 def gen_ship(board, ship_info):
     """takes in board and ship_info, returns board and ship_info. Builds out the ship
     variable by getting random vector and startpos, then building out the tuple coords
-    then assigns it to the coords key in board for comparison later."""
+    then assigns it to the coords key in board for comparison later. 
+    Used by gen_env to build out ships in for loop"""
     #get a random vector, store in vector of dict.
     ship_info['vector'] = get_rand_vector()
     #Send board size, ship vector and ship length to get legal start coords
@@ -114,7 +115,8 @@ def gen_ship(board, ship_info):
     return (ship_info)
 
 def place_ship(board, ship):
-    """places the ship after we've confirmed the coords don't overlap"""
+    """Places the ship in the board so we can later detect hits 
+    and total length of the ships"""
     for i in ship['coords']:
         board['ships'].append(i)
     return board
@@ -123,12 +125,15 @@ def place_ship(board, ship):
 #Get Functions
 
 def get_game_params():
+    """Collects the size of the board and the number of ships."""
     param = {}
     param['boardsize'] = get_int_input('How large do you want the board? ')
     param['ships'] = get_int_input('How many ships? ')
     return param
 
 def get_int_input(string):
+    """this function is to simplify the process of collecting an int from the user 
+    without getting an error."""
     while True:
         try:
             intput = int(raw_input(string))
@@ -137,7 +142,9 @@ def get_int_input(string):
             print "Please enter a positive integer."
     
 def get_guess(board):
-    """Retrieve the guess from the user"""
+    """Retrieve the guess from the user. If user enters anything other than positive 
+    integer it catches the error and asks again. returns the guess as a tuple."""
+    #Yet to implement the get_int_input function here. To do.
     guess_row = guess_col = None
     while True:
         try:
@@ -164,13 +171,18 @@ def check_guess_legal(board, guess):
     return guess[0][0] in range(0,len(board['field'])) and guess[0][1] in range(0,len(board['field']))
 
 def check_guess_hit(board, guess):
+    """Checks if the guess is in any of the ship coords. Returns true if yes."""
     return guess in board['ships']
 
 def check_cell_guessed(board, guess):
+    """Checks if the guess matches any of the already guessed coords on the board. 
+    Returns true if guessed"""
     guess_row, guess_col = guess
     return board['field'][guess_row][guess_col] == '/' or board['field'][guess_row][guess_col] == 'X'
 
 def check_game_over(board, ships):
+    """Checks if ships['hits'] equals the total length of the ships on the board.
+    If game is over exit game with success message"""
     if ships['hits'] == len(board['ships']):
         print_board(board)
         print "Congrats. You sunk My Battleship in %s turns" % board['turns']
@@ -183,11 +195,13 @@ def check_game_over(board, ships):
 #Store Functions:
 
 def store_miss(board, guess):
+    """Store miss on the board as a '/'"""
     guess_row, guess_col = guess
     board['field'][guess_row][guess_col] = '/'
     return board
 
-def store_hit(board, ships, guess):    ##TEST THIS BEFORE USING - TEST HITS INCREMENTS PROPERLY
+def store_hit(board, ships, guess):
+    """Store the hit in the board as an 'X'"""
     guess_row, guess_col = guess
     board['field'][guess_row][guess_col] = 'X'
     ships['hits'] += 1
@@ -198,30 +212,10 @@ def store_hit(board, ships, guess):    ##TEST THIS BEFORE USING - TEST HITS INCR
 #Parent Functions Below, pulls together most of the above
 
 def guess(board, ships):
-    while True:
-        guess = get_guess(board)
-        os.system('clear')
-        if check_guess_legal(board, guess) == True:
-            if check_cell_guessed(board, guess) == False:
-                if check_guess_hit(board, guess) == True:
-                    print "Hit!"
-                    board, ships = store_hit(board, ships, guess)
-                    break
-                elif check_guess_hit(board, guess) == False:
-                    print "Miss!"
-                    board = store_miss(board, guess)
-                    board['turns'] += 1
-                    break
-            else:
-                print "You already guessed that!"
-                print_board(board)
-        else:
-            print "Sorry, guess out of scope of board, try again."
-            print_board(board)
-    return (board, ships)
-
-
-def guess_alt(board, ships):
+    """Gets the guess. Checks it is a legal guess, checks it is not yet guessed,
+    checks it's a hit. If anything fails it loops again, collecting guess again.
+    returns board and ships. returning ships is for later, when building individual
+    ship sinking detection."""
     while True:
         guess = get_guess(board)
         os.system('clear')
@@ -243,8 +237,6 @@ def guess_alt(board, ships):
             print "Sorry, guess out of scope of board, try again."
             print_board(board)
     return (board, ships)
-
-
 
 def gen_env():  #ultimately part of battleships()
     param = get_game_params()
