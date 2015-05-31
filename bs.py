@@ -27,6 +27,8 @@ from sys import exit
 #    - removed redundant board placement function
 #    - changed gen_board and board_dict to just take the param dict.
 
+#0.9 - added josh's improvements.
+
 
 #Board gen and Ship Placement functions below
 
@@ -130,13 +132,13 @@ def get_int_input(string):
     while True:
         try:
             intput = int(raw_input(string))
-            break
+            return intput
         except ValueError:
             print "Please enter a positive integer."
-    return intput
-
+    
 def get_guess(board):
     """Retrieve the guess from the user"""
+    guess_row = guess_col = None
     while True:
         try:
             guess_col = int(raw_input("Guess your col (0 - %s): " % (len(board['field']) - 1)))
@@ -159,23 +161,14 @@ def get_guess(board):
 def check_guess_legal(board, guess):
     """Function to check if guess is legal, returns True or false."""
     guess = [guess]
-    if guess[0][0] in range(0,len(board['field'])) and guess[0][1] in range(0,len(board['field'])):
-        return True
-    else:
-        return False
-        
+    return guess[0][0] in range(0,len(board['field'])) and guess[0][1] in range(0,len(board['field']))
+
 def check_guess_hit(board, guess):
-    if guess in board['ships']:
-        return True
-    else:
-        return False
+    return guess in board['ships']
 
 def check_cell_guessed(board, guess):
     guess_row, guess_col = guess
-    if board['field'][guess_row][guess_col] == '/' or board['field'][guess_row][guess_col] == 'X':
-        return True
-    else:
-        return False
+    return board['field'][guess_row][guess_col] == '/' or board['field'][guess_row][guess_col] == 'X'
 
 def check_game_over(board, ships):
     if ships['hits'] == len(board['ships']):
@@ -227,7 +220,33 @@ def guess(board, ships):
             print_board(board)
     return (board, ships)
 
-def test_ship_gen():  #ultimately part of battleships()
+
+def guess_alt(board, ships):
+    while True:
+        guess = get_guess(board)
+        os.system('clear')
+        if check_guess_legal(board, guess):
+            if not check_cell_guessed(board, guess):
+                if check_guess_hit(board, guess):
+                    print "Hit!"
+                    board, ships = store_hit(board, ships, guess)
+                    break
+                else:
+                    print "Miss!"
+                    board = store_miss(board, guess)
+                    board['turns'] += 1
+                    break
+            else:
+                print "You already guessed that!"
+                print_board(board)
+        else:
+            print "Sorry, guess out of scope of board, try again."
+            print_board(board)
+    return (board, ships)
+
+
+
+def gen_env():  #ultimately part of battleships()
     param = get_game_params()
     
     board = board_dict(param)
@@ -248,22 +267,16 @@ def test_ship_gen():  #ultimately part of battleships()
     return (board, ships, param)
         
 def battleships():
-    board, ships, param = test_ship_gen()
+    board, ships, param = gen_env()
     
     while True:
         print "You have had %s turns!" % (board['turns'])
         print_board(board)
         guess(board, ships)
-        if check_game_over(board, ships) == True:
+        if check_game_over(board, ships):
             exit("Debug Exit")
         
-
-
-                
-
-    
-
-
+#Boilerplate
 
 if __name__ == '__main__':
     battleships()
