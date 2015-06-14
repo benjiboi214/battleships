@@ -57,6 +57,7 @@ from sys import exit
 #     - Changed get_rand_startpos so it is more readable and PEP8 compliant
 #     - Changed check_ship_loc to use gen expression. See 19. on improvement list.
 #     - Implemented int_input in get_guess
+#     - Got rid of board_dict function
  
 
 def battleships():
@@ -75,14 +76,12 @@ def battleships():
 #Board Functions
 
 def gen_board(param):
-    """This function generates the board, accepts the width of the board as an int"""
-    board = [["0"] * param for _ in range(param)]
-    return board
-
-def board_dict(param):
     """This function is to build out the dict for 
     storing boards and ship coords for collision detection"""
-    board = {'field' : gen_board(param), 'ships' : [], 'turns' : 0}
+    board = {'field' : [["0"] * param for _ in range(param)], 
+             'ships' : [], 
+             'turns' : 0
+             }
     return board
 
 def print_board(board):		#function for printing the board out pretty
@@ -253,7 +252,7 @@ def gen_env():
     #Ultimately part of battleships()
     param = get_game_params()
     
-    board = board_dict(param['boardsize'])
+    board = gen_board(param['boardsize'])
     
     ships = {'hits' : 0}
     counter = 0
